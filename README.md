@@ -1,8 +1,7 @@
-# Festival Stall Pre-Order and Pickup Website 
-
+# Festival Stall Pre-Order and Pickup System
 
 ## Project Overview
-A real-time web application that allows festival attendees to browse food stalls, view menus, place pre-orders, and select pickup times. Stall owners can manage incoming orders through a dedicated dashboard, updating order statuses from "Pending" to "Preparing" to "Ready for Pickup".
+A real-time web application that allows festival attendees to browse food stalls, view menus, place pre-orders, and select pickup times. Stall owners can manage incoming orders through a dedicated dashboard, updating order statuses from "Pending" to "Preparing" to "Ready for Pickup". Built with React + TypeScript frontend, Express.js backend, and MongoDB database.
 
 ## Project Requirements Checklist
 
@@ -19,24 +18,25 @@ A real-time web application that allows festival attendees to browse food stalls
   - Click events (buttons, stall selection, menu items)
   - Submit events (checkout form)
   - Input/change events (form inputs, stall selection)
-- **fetch()**: Integrated via Supabase client which uses fetch() internally for all API calls
+- **fetch()**: All API calls use native fetch() to communicate with Express REST API
 
 ### ✅ Backend Requirements
-- **Database**: Supabase (PostgreSQL) for persistent data storage
+- **Node.js + Express**: RESTful API server with 7 endpoints
+- **Database**: MongoDB (local instance) for persistent data storage
 - **CRUD Operations**:
-  - **GET**: Fetching stalls, menu items, orders, order details
-  - **POST**: Creating new orders and order items
-  - **UPDATE**: Updating order status (pending → preparing → ready → completed)
-  - **DELETE**: Cascade deletes configured in database schema
-- **No .json or .txt files**: All data stored in Supabase database
+  - **GET**: /api/stalls, /api/menu/:stallId, /api/orders, /api/orders/:orderId
+  - **POST**: /api/orders (create new orders)
+  - **PATCH**: /api/orders/:orderId (update order status)
+  - **DELETE**: Configured for cascade deletions
+- **No .json or .txt files**: All data stored in MongoDB collections
 
 ### ✅ Data Storage
-- **Supabase Tables**:
-  1. `stalls` - Food stall information
-  2. `menu_items` - Menu items for each stall
-  3. `orders` - Customer orders with pickup times
-  4. `order_items` - Individual items in each order
-- **Row Level Security (RLS)**: Enabled on all tables with appropriate policies
+- **MongoDB Collections**:
+  1. `stalls` - Food stall information with name, description, owner email
+  2. `menuitems` - Menu items for each stall with pricing
+  3. `orders` - Customer orders with status tracking
+  4. `orderitems` - Individual items in each order (subdocument)
+- **Schema Validation**: Mongoose schemas enforce data integrity and relationships
 
 ### ✅ Style & Code Quality
 - **Semantic HTML**: Uses `<header>`, `<main>`, `<section>`, `<article>`, `<nav>`, `<button>`, `<form>`
@@ -47,21 +47,26 @@ A real-time web application that allows festival attendees to browse food stalls
 ## Project Structure
 
 ```
-src/
-├── classes/
-│   ├── OrderManager.ts      # ES6 Class for order management
-│   └── MenuManager.ts        # ES6 Class for menu/stall management
-├── components/
-│   ├── StallList.tsx         # Browse all food stalls
-│   ├── MenuView.tsx          # View menu and add items to cart
-│   ├── CheckoutForm.tsx      # Enter customer details and pickup time
-│   ├── OrderConfirmation.tsx # Order success confirmation
-│   └── StallDashboard.tsx    # Stall owner order management
-├── lib/
-│   └── supabase.ts           # Supabase client configuration
-├── App.tsx                   # Main application with view routing
-├── main.tsx                  # Application entry point
-└── index.css                 # Tailwind CSS imports
+project/
+├── src/
+│   ├── classes/
+│   │   ├── OrderManager.ts      # ES6 Class for order management
+│   │   └── MenuManager.ts        # ES6 Class for menu/stall management
+│   ├── components/
+│   │   ├── StallList.tsx         # Browse all food stalls
+│   │   ├── MenuView.tsx          # View menu and add items to cart
+│   │   ├── CheckoutForm.tsx      # Enter customer details and pickup time
+│   │   ├── OrderConfirmation.tsx # Order success confirmation
+│   │   └── StallDashboard.tsx    # Stall owner order management
+│   ├── App.tsx                   # Main application with view routing
+│   ├── main.tsx                  # Application entry point
+│   └── index.css                 # Tailwind CSS imports
+├── models.cjs                    # Mongoose schema definitions
+├── seed.cjs                      # Database seeding script
+├── server.js                     # Express API server with admin dashboard
+├── package.json                  # Dependencies and scripts
+├── vite.config.ts                # Vite configuration
+└── tsconfig.json                 # TypeScript configuration
 ```
 
 ## Key Features
@@ -79,10 +84,28 @@ src/
 3. **Order Details**: View customer info, items, and pickup times
 4. **Status Filtering**: Visual breakdown by status (pending/preparing/ready/completed)
 5. **Refresh**: Manual refresh to get latest orders
+6. **Admin Dashboard**: Access via Express server at http://localhost:3001
 
 ## Technical Implementation
 
-### ES6 Classes with Callbacks
+### Tech Stack
+
+**Frontend**:
+- React 18.3.1 with TypeScript 5.5.3
+- Vite 5.4.8 dev server
+- Tailwind CSS 3.4.1
+- Lucide React icons
+
+**Backend**:
+- Express 5.1.0 REST API
+- Node.js 20.19.0 runtime
+- Mongoose 8.20.0 ODM
+- CORS 2.8.5
+
+**Database**:
+- MongoDB 8.2.1 (local instance)
+- Port: 27017
+- Database: festival-stalls
 
 **OrderManager Class**:
 ```typescript
@@ -110,68 +133,105 @@ class MenuManager {
 }
 ```
 
-### Database Schema
+### API Endpoints
 
-The database includes:
-- Foreign key relationships between tables
-- Check constraints for data validation
-- Default values for status and timestamps
-- Cascade deletes for data integrity
-- RLS policies for security
+- `GET /` - Admin dashboard with menu items and orders
+- `GET /api/stalls` - All food stalls
+- `GET /api/menu/:stallId` - Menu items for a stall
+- `POST /api/orders` - Create new order
+- `GET /api/orders` - All orders
+- `GET /api/orders/:orderId` - Specific order details
+- `PATCH /api/orders/:orderId` - Update order status
 
-### Event Handling Examples
+### Event Handling
 
 1. **Click Events**: Stall selection, menu item add/remove, status updates
 2. **Submit Events**: Checkout form submission
 3. **Input Events**: Customer detail forms, stall selection dropdown
 4. **Change Events**: Date/time picker for pickup time
 
-## How to Present (6-8 minutes)
+## How It Works
 
-1. **Introduction (1 min)**:
-   - Explain the problem: Long festival food lines
-   - Solution: Pre-order and pickup system
+### Frontend Flow
 
-2. **Customer Demo (3 min)**:
-   - Browse stalls
-   - View menu and add items
-   - Complete checkout with pickup time
-   - Show order confirmation
+The React application starts with `StallList` component that displays all available food stalls. When a user clicks on a stall, they're taken to `MenuView` where they can browse menu items for that specific stall. The `MenuManager` class handles fetching stalls and menu items from the backend via REST API.
 
-3. **Owner Dashboard Demo (2 min)**:
-   - Show incoming orders
-   - Update order status through workflow
-   - Explain real-time updates
+Users can add items to their cart using +/- buttons to adjust quantities. The cart displays real-time totals and shows all selected items. When ready to checkout, users proceed to `CheckoutForm` where they enter their name, email, phone number, and select a pickup time (minimum 30 minutes from now).
 
-4. **Technical Overview (2 min)**:
-   - React.js frontend with TypeScript
-   - Two ES6 Classes (OrderManager, MenuManager)
-   - Callbacks for component communication
-   - Supabase database with RLS
-   - All CRUD operations demonstrated
+The `OrderManager` class handles order creation by sending a POST request to `/api/orders` with customer details and cart items. After successful order placement, the `OrderConfirmation` component displays the order details, order number, and pickup time confirmation.
+
+### Backend Architecture
+
+The Express server runs on port 3001 and provides 7 REST endpoints. When a customer places an order via POST `/api/orders`, the backend creates an order record in MongoDB and links it with individual order items. Each order stores customer details, items ordered, total amount, and status.
+
+Stall owners access the `StallDashboard` component which fetches all orders for their specific stall using `/api/orders` filtered by stall ID. They can update order status through buttons that call PATCH `/api/orders/:orderId` with the new status. The status workflow is: pending → preparing → ready → completed.
+
+### Data Flow
+
+1. **Stalls & Menus**: MenuManager fetches stalls list and menu items on app load using GET endpoints
+2. **Order Creation**: OrderManager creates orders with items, sends to backend via POST, receives order confirmation
+3. **Order Management**: StallDashboard fetches orders for selected stall, displays them, and updates status in real-time
+4. **Database**: MongoDB stores all data with Mongoose schemas ensuring data validation and relationships
+
+### Class Usage
+
+**MenuManager** provides methods to fetch all stalls and menu items for a specific stall. It uses callbacks to notify React components when data changes.
+
+**OrderManager** provides methods to create orders, fetch orders by stall, update order status, and fetch detailed order information. Components subscribe to order updates through callbacks and re-render when data changes.
 
 ## Running the Application
 
 ```bash
-# Development
+# Install dependencies
+npm install
+
+# Seed the database with initial data
+npm run seed
+
+# Development (starts all services)
 npm run dev
 
-# Build
+# Build for production
 npm run build
 
 # Type check
 npm run typecheck
 ```
 
+## Manual Service Startup
+
+If needed, start services individually:
+
+```bash
+# Start MongoDB
+"C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe" --dbpath "C:\Users\baban\AppData\Local\MongoDB\data"
+
+# Start Express backend (in new terminal)
+node server.js
+
+# Start Vite frontend (in new terminal)
+npm run dev
+```
+
 ## Environment Variables
 
-The `.env` file contains Supabase connection details:
-- `VITE_SUPABASE_URL`: Supabase project URL
-- `VITE_SUPABASE_ANON_KEY`: Supabase anonymous key
+The `.env` file contains:
+- `VITE_MONGODB_URI`: MongoDB connection string (defaults to mongodb://localhost:27017/festival-stalls)
 
 ## Sample Data
 
 The database is pre-populated with:
-- 4 food stalls (Tasty Tacos, Pizza Paradise, Burger Bonanza, Sweet Treats)
-- 9 menu items across all stalls
+- **4 food stalls**: Tasty Tacos, Pizza Paradise, Burger Bonanza, Sweet Treats
+- **20 menu items** across all stalls:
+  - **Tasty Tacos** (5 items): Chicken Taco, Beef Taco, Veggie Taco, Fish Taco, Carnitas Taco
+  - **Pizza Paradise** (5 items): Margherita Pizza, Pepperoni Pizza, Vegetarian Pizza, BBQ Chicken Pizza, Four Cheese Pizza
+  - **Burger Bonanza** (5 items): Classic Burger, Spicy Chicken Burger, Bacon Burger, Mushroom Swiss Burger, Double Deluxe Burger
+  - **Sweet Treats** (5 items): Chocolate Brownie, Fruit Smoothie, Strawberry Cheesecake, Vanilla Ice Cream Sundae, Mango Lassi
 - Ready to accept orders immediately
+
+## Access Points
+
+- **Customer Interface**: http://localhost:5173
+- **Admin Dashboard**: http://localhost:3001
+- **API Server**: http://localhost:3001/api
+- **MongoDB**: localhost:27017
