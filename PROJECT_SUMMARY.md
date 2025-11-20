@@ -150,30 +150,34 @@ class MenuManager {
 3. **Input Events**: Customer detail forms, stall selection dropdown
 4. **Change Events**: Date/time picker for pickup time
 
-## How to Present (6-8 minutes)
+## How It Works
 
-1. **Introduction (1 min)**:
-   - Explain the problem: Long festival food lines
-   - Solution: Pre-order and pickup system with real-time updates
+### Frontend Flow
 
-2. **Customer Demo (3 min)**:
-   - Browse stalls
-   - View menu with pricing
-   - Add items to cart
-   - Complete checkout with pickup time
-   - Show order confirmation
+The React application starts with `StallList` component that displays all available food stalls. When a user clicks on a stall, they're taken to `MenuView` where they can browse menu items for that specific stall. The `MenuManager` class handles fetching stalls and menu items from the backend via REST API.
 
-3. **Owner Dashboard Demo (2 min)**:
-   - Show incoming orders
-   - Update order status through workflow
-   - Explain real-time order management
+Users can add items to their cart using +/- buttons to adjust quantities. The cart displays real-time totals and shows all selected items. When ready to checkout, users proceed to `CheckoutForm` where they enter their name, email, phone number, and select a pickup time (minimum 30 minutes from now).
 
-4. **Technical Overview (2 min)**:
-   - React.js frontend with TypeScript
-   - Express.js backend REST API
-   - MongoDB database with Mongoose ODM
-   - Two ES6 Classes (OrderManager, MenuManager)
-   - All CRUD operations demonstrated
+The `OrderManager` class handles order creation by sending a POST request to `/api/orders` with customer details and cart items. After successful order placement, the `OrderConfirmation` component displays the order details, order number, and pickup time confirmation.
+
+### Backend Architecture
+
+The Express server runs on port 3001 and provides 7 REST endpoints. When a customer places an order via POST `/api/orders`, the backend creates an order record in MongoDB and links it with individual order items. Each order stores customer details, items ordered, total amount, and status.
+
+Stall owners access the `StallDashboard` component which fetches all orders for their specific stall using `/api/orders` filtered by stall ID. They can update order status through buttons that call PATCH `/api/orders/:orderId` with the new status. The status workflow is: pending → preparing → ready → completed.
+
+### Data Flow
+
+1. **Stalls & Menus**: MenuManager fetches stalls list and menu items on app load using GET endpoints
+2. **Order Creation**: OrderManager creates orders with items, sends to backend via POST, receives order confirmation
+3. **Order Management**: StallDashboard fetches orders for selected stall, displays them, and updates status in real-time
+4. **Database**: MongoDB stores all data with Mongoose schemas ensuring data validation and relationships
+
+### Class Usage
+
+**MenuManager** provides methods to fetch all stalls and menu items for a specific stall. It uses callbacks to notify React components when data changes.
+
+**OrderManager** provides methods to create orders, fetch orders by stall, update order status, and fetch detailed order information. Components subscribe to order updates through callbacks and re-render when data changes.
 
 ## Running the Application
 
